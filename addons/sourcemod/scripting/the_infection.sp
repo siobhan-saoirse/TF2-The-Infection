@@ -505,6 +505,8 @@ public Action Timer_SetZombieReady(Handle timer, int client)
 	    		TF2Attrib_SetByName(client, "move speed penalty", 1.05);
 			}
 	    	TF2Attrib_SetByName(client, "damage bonus vs burning", 1.5);
+	    	TF2Attrib_SetByName(client, "gesture speed increase", 0.8);
+	    	TF2Attrib_SetByName(client, "fire rate penalty", 1.2);
 			switch(TF2_GetPlayerClass(client))
 			{
 				case TFClass_Scout: GiveVoodooItem(client, 5617);
@@ -1518,17 +1520,24 @@ public Action:InfectionSH(clients[64], &numClients, String:sample[PLATFORM_MAX_P
 		if (StrContains(sample, "music") == -1 && (StrContains(sample, "weapons") != -1 || StrContains(sample, "vo") != -1)) {
 
 			if (IsValidClient(client) && GetClientTeam(client) == 2) {
-				ReplaceString(sample, sizeof(sample), "severe", "sharp");
-				pitch = 95;
-				if (StrContains(sample, "weapons") == -1) {
-					EmitSoundToAll(sample,client,channel,level,0,volume,pitch);
+				ReplaceString(sample, sizeof(sample), "Severe", "Sharp");
+				ReplaceString(sample, sizeof(sample), "CrticialDeath", "Sharp");
+				ReplaceString(sample, sizeof(sample), "CriticalDeath", "Sharp");
+				if (g_bIsPlagued[client]) {
+
+					pitch = 80;
+
+				} else {
+
+					pitch = 95;
+
 				}
 				return Plugin_Changed;
 			} else if (IsValidClient(client) && GetClientTeam(client) == 3 && StrContains(sample, "vo") == -1) {
-				pitch = GetRandomInt(92,108); 
-				if (StrContains(sample, "weapons") == -1) {
-					EmitSoundToAll(sample,client,channel,level,0,volume,pitch);
-				}
+				pitch = GetRandomInt(92,108);  
+				return Plugin_Changed;
+			} else if (IsValidClient(client) && GetClientTeam(client) == 3 && StrContains(sample, "vo") != -1) {
+				pitch = GetRandomInt(90,100); 
 				return Plugin_Changed;
 			}
 
