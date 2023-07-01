@@ -491,7 +491,7 @@ public Action Timer_SetZombieReady(Handle timer, int client)
 	    	TF2Attrib_SetByName(client, "healing received penalty", 0.4);
 	    	TF2Attrib_SetByName(client, "damage penalty", 1.5);
 	    	TF2Attrib_SetByName(client, "zombiezombiezombiezombie", 1.0);
-	    	TF2Attrib_SetByName(client, "SPELL: Halloween voice modulation", 1.0);
+	    	TF2Attrib_SetByName(client, "SPELL: Halloween voice modulation", 0.0);
 	    	TF2Attrib_SetByName(client, "heal on kill", 100.0); 
 			TF2Attrib_SetByName(client, "deploy time decreased", 0.7);
 			TF2Attrib_SetByName(client, "melee range multiplier", 0.7);
@@ -1523,13 +1523,13 @@ public Action:InfectionSH(clients[64], &numClients, String:sample[PLATFORM_MAX_P
 				ReplaceString(sample, sizeof(sample), "Severe", "Sharp");
 				ReplaceString(sample, sizeof(sample), "CrticialDeath", "Sharp");
 				ReplaceString(sample, sizeof(sample), "CriticalDeath", "Sharp");
-				if (g_bIsPlagued[client]) {
+				if (g_bIsPlagued[client] == true) {
 
-					pitch = 80;
+					pitch = 65;
 
 				} else {
 
-					pitch = 95;
+					pitch = 80;
 
 				}
 				return Plugin_Changed;
