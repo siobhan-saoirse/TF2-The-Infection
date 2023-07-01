@@ -351,7 +351,7 @@ public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadc
 			} else {
 				 
 				EmitGameSoundToAll("Halloween.spell_skeleton_horde_cast",client)
-				CreateTimer(0.01, TeleportToOGLocation, client);
+				CreateTimer(0.1, TeleportToOGLocation, client);
 				if (survCount == 2)
 				{
 					
