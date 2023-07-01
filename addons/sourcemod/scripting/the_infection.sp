@@ -140,7 +140,9 @@ stock TF2_GetNameOfClass(TFClassType:iClass, String:sName[], iMaxlen)
 
 public Action:RoundStarted2(Handle: event , const String: name[] , bool: dontBroadcast)
 {
-	ServerCommand("mp_scrambleteams 15");
+	if(GetConVarInt(cvarZombieEnable) == 1) {
+
+		ServerCommand("mp_scrambleteams 15");
 		decl String:nameflag[] = "zombbotflag";
 		decl String:class[] = "item_teamflag";
 		new ent = FindEntityByTargetname(nameflag, class);
@@ -155,6 +157,8 @@ public Action:RoundStarted2(Handle: event , const String: name[] , bool: dontBro
 		{
 			AcceptEntityInput(ent, "Kill");
 		}
+		
+	}
 }
 
 
@@ -588,6 +592,7 @@ public Action Timer_SetZombieReady(Handle timer, int client)
 				TF2Attrib_SetByName(client, "melee range multiplier", 2.0);
 				TF2Attrib_SetByName(client, "melee bounds multiplier", 1.5);
 				TF2Attrib_SetByName(client, "heal on kill", 500.0);
+	    	TF2Attrib_SetByName(client, "fire rate penalty", 1.0);
 				TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);
 				TF2_SetHealth(client, 350 + 14000);
 
