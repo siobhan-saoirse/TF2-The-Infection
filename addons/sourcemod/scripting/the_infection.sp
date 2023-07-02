@@ -483,9 +483,9 @@ public Action Timer_SetZombieReady(Handle timer, int client)
 			InitializeZombieClass(client);
 			TF2_SwitchtoSlot(client, 2);
 	    	TF2Attrib_SetByName(client, "move speed penalty", 1.0);
-	    	TF2Attrib_SetByName(client, "dmg taken from blast reduced", 10.0);
-	    	TF2Attrib_SetByName(client, "dmg taken from fire reduced", 2.0);
-	    	TF2Attrib_SetByName(client, "dmg taken from bullets reduced", 1.05);
+	    	TF2Attrib_SetByName(client, "dmg taken from blast reduced", 1.5);
+	    	TF2Attrib_SetByName(client, "dmg taken from fire reduced", 1.35);
+	    	TF2Attrib_SetByName(client, "dmg taken from bullets reduced", 1.02); 
 	    	TF2Attrib_SetByName(client, "building cost reduction", 50.0);
 	    	TF2Attrib_SetByName(client, "healing received penalty", 0.4);
 	    	TF2Attrib_SetByName(client, "damage penalty", 1.5);
@@ -587,6 +587,7 @@ public Action Timer_SetZombieReady(Handle timer, int client)
 				TF2Attrib_SetByName(client, "melee range multiplier", 2.0);
 				TF2Attrib_SetByName(client, "melee bounds multiplier", 1.5);
 				TF2Attrib_SetByName(client, "heal on kill", 500.0);
+				TF2Attrib_SetByName(client, "no self blast dmg", 1.0); 
 	    	TF2Attrib_SetByName(client, "fire rate penalty", 1.0);
 				TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);
 				TF2_SetHealth(client, 350 + 14000);
