@@ -90,23 +90,16 @@ public OnPluginStart()
 	AddCommandListener(TauntCmd, "taunt");
 	AddCommandListener(TauntCmd, "+taunt");
 	CreateTimer(1.0, Timer_RageMeter, _, TIMER_REPEAT);
-
-    
-    for (new i = 1; i <= MaxClients; i++)
-    {
-        if (IsClientInGame(i) && !IsClientReplay(i) && !IsClientSourceTV(i))
-        {
-            SDKHook(i, SDKHook_OnTakeDamage, OnTakeDamage);
-        }
-    }
 }
 public Action:OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damagetype, &weapon, Float:damageForce[3], Float:damagePosition[3], damagecustom)
 {
 	
 	if (GetConVarInt(cvarZombieEnable) == 1)
 	{
-		if (g_bIsPlagued[attacker]) {
+		if (g_bIsPlagued[attacker] && attacker != victim) {
 			TF2_AddCondition(victim,TFCond_Plague,TFCondDuration_Infinite);
+			TF2_MakeBleed(victim,victim,90.0);
+			TF2_MakeBleed(victim,victim,90.0);
 			TF2_MakeBleed(victim,victim,90.0);
 			TF2_MakeBleed(victim,victim,90.0);
 		}
@@ -120,6 +113,7 @@ public OnMapStart()
 	{
 	    CreateTimer(0.1, MoveFlagTimer,_,TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
     }
+	PrecacheSound(")items/powerup_pickup_plague_infected_loop.wav");
 }
 
 stock TF2_GetNameOfClass(TFClassType:iClass, String:sName[], iMaxlen)
@@ -157,7 +151,7 @@ public Action:RoundStarted2(Handle: event , const String: name[] , bool: dontBro
 		{
 			AcceptEntityInput(ent, "Kill");
 		}
-		
+
 	}
 }
 
@@ -271,6 +265,7 @@ public OnClientPutInServer(client)
 {
 	g_iSurvRage[client] = 0;
 	OnClientDisconnect_Post(client);
+    SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 }
 public void OnZombieCvarChange(ConVar convar, char[] oldValue, char[] newValue)
 {
@@ -1322,6 +1317,7 @@ public RoundStarted(Handle:hEvent, const String:name[], bool:dontBroadcast)
 	if (GetConVarInt(cvarZombieEnable) == 1)
 	{
 	    CreateTimer(0.0, LoadSomeStuff);
+	    CreateTimer(0.1, MoveFlagTimer,_,TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	}
 
 }
@@ -1537,12 +1533,16 @@ public Action:InfectionSH(clients[64], &numClients, String:sample[PLATFORM_MAX_P
 					pitch = 80;
 
 				}
+				if (StrContains(sample, "vo") != -1) {
+					EmitSoundToAll(sample,client,channel,level,flags,volume,pitch);
+				}
 				return Plugin_Changed;
 			} else if (IsValidClient(client) && GetClientTeam(client) == 3 && StrContains(sample, "vo") == -1) {
 				pitch = GetRandomInt(92,108);  
 				return Plugin_Changed;
 			} else if (IsValidClient(client) && GetClientTeam(client) == 3 && StrContains(sample, "vo") != -1) {
 				pitch = GetRandomInt(90,100); 
+				EmitSoundToAll(sample,client,channel,level,flags,volume,pitch);
 				return Plugin_Changed;
 			}
 
