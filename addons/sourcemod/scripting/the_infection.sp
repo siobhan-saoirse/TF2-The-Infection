@@ -9,16 +9,6 @@
 
 new Float:flag_pos[3];
 new Float:flag_pos2[3];
-enum MissionType
-{
-	NOMISSION         = 0,
-	UNKNOWN           = 1,
-	DESTROY_SENTRIES  = 2,
-	SNIPER            = 3,
-	SPY               = 4,
-	ENGINEER          = 5,
-	REPROGRAMMED      = 6,
-};
 enum
 {
 	TF_FLAGTYPE_CTF = 0, //ctf_
@@ -36,7 +26,6 @@ static ConVar sv_cheats;
 static ConVar cvarTimeScale;
 Handle g_hEquipWearable;
 
-Handle g_hSetMission;
 new g_iSurvRage						[MAXPLAYERS + 1];
 new bool:g_bIsPlagued[MAXPLAYERS + 1] = { false, ... };
 
@@ -79,14 +68,6 @@ public OnPluginStart()
 
 	if (!g_hEquipWearable)
 	SetFailState("Failed to create call: CBasePlayer::EquipWearable");
-
-	delete hTF2;
-
-	StartPrepSDKCall(SDKCall_Player);
-	PrepSDKCall_SetSignature(SDKLibrary_Server, "\x55\x8B\xEC\x80\x7D\x0C\x00\x56\x8B\xF1", 10);
-	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);	//MissionType
-	PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);			//StartIdleSount?
-	if((g_hSetMission = EndPrepSDKCall()) == INVALID_HANDLE) SetFailState("Failed to create Signature Call for CTFBot::SetMission!");
 	AddCommandListener(TauntCmd, "taunt");
 	AddCommandListener(TauntCmd, "+taunt");
 	CreateTimer(1.0, Timer_RageMeter, _, TIMER_REPEAT);
@@ -537,7 +518,7 @@ public Action Timer_SetZombieReady(Handle timer, int client)
 				EmitGameSoundToAll("Powerup.PickUpPlague")
 	    		TF2Attrib_SetByName(client, "max health additive bonus", 500.0);
 	    		TF2Attrib_SetByName(client, "dmg taken from blast reduced", 1.2); 
-	    		TF2Attrib_SetByName(client, "dmg taken increased", 0.5); 
+	    		TF2Attrib_SetByName(client, "dmg taken increased", 0.3); 
 				SetVariantString("1.5");
 				AcceptEntityInput(client, "SetModelScale");
 				g_bIsPlagued[client] = true;
@@ -632,16 +613,7 @@ public Action Timer_SetZombieReady(Handle timer, int client)
 			SetEntProp(client, Prop_Send, "m_nForcedSkin", 0);
 			g_bIsPlagued[client] = false;
 		}
-		if (IsFakeClient(client)) {
-    		CreateTimer(0.2, Timer_SetMission, client); 
-		}
 	}
-}
-
-public Action Timer_SetMission(Handle timer, int client)
-{
-	SDKCall(g_hSetMission, client, SPY, true);
-    return Plugin_Stop;
 }
 
 stock TF2_SetHealth(client, NewHealth)
