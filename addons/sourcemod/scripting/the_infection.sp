@@ -265,7 +265,7 @@ public void OnZombieCvarChange(ConVar convar, char[] oldValue, char[] newValue)
 public void Event_InvApp(Event event, const char[] name, bool dontBroadcast)
 {
 	int client = GetClientOfUserId(event.GetInt("userid"));
-    CreateTimer(0.1, Timer_SetZombieReady, client, TIMER_FLAG_NO_MAPCHANGE); 
+    CreateTimer(0.25, Timer_SetZombieReady, client, TIMER_FLAG_NO_MAPCHANGE); 
 }
 
 bool GiveVoodooItem(int client, int itemindex)
