@@ -19,6 +19,14 @@ enum
 	TF_FLAGTYPE_ROBOT_DESTRUCTION, //rd_ and pd_
 	TF_FLAGTYPE_PLAYER_DESTRUCTION //pd_
 };
+public Plugin:myinfo = 
+{
+	name = "[TF2] The Infection",
+	author = "Seamusmario",
+	description = "Yet Another Zombie Survival Gamemode for TF2",
+	version = "a1.1",
+	url = "https://forums.alliedmods.net/showthread.php?t=343236"
+}
 
 Handle g_hSdkEquipWearable;
 static ConVar cvarZombieEnable;
@@ -116,8 +124,8 @@ stock TF2_GetNameOfClass(TFClassType:iClass, String:sName[], iMaxlen)
 public Action:RoundStarted2(Handle: event , const String: name[] , bool: dontBroadcast)
 {
 	if(GetConVarInt(cvarZombieEnable) == 1) {
-
-		ServerCommand("mp_scrambleteams 15");
+ 
+		//ServerCommand("mp_scrambleteams 15");
 		decl String:nameflag[] = "zombbotflag";
 		decl String:class[] = "item_teamflag";
 		new ent = FindEntityByTargetname(nameflag, class);
@@ -250,7 +258,7 @@ public OnClientPutInServer(client)
 }
 public void OnZombieCvarChange(ConVar convar, char[] oldValue, char[] newValue)
 {
-	ServerCommand("mp_scrambleteams 15");
+	ServerCommand("mp_rstartgame_immediate 1");
     if (!GetConVarBool(convar)) {
 
 	    Steam_SetGameDescription("Team Fortress");
@@ -306,18 +314,46 @@ public Action OnClientCommand(int client, int args)
     return Plugin_Continue;
 }
 
+stock int GetRandomPlayer(int team) 
+{ 
+    int[] clients = new int[MaxClients]; 
+    int clientCount; 
+    for (int i = 1; i <= MaxClients; i++) 
+    { 
+        if (IsClientInGame(i) && GetClientTeam(i) == team)
+        { 
+            clients[clientCount++] = i; 
+        } 
+    } 
+    return (clientCount == 0) ? -1 : clients[GetRandomInt(0, clientCount - 1)]; 
+}
+
+stock void ForceTeamWin(int team)
+{
+    int ent = FindEntityByClassname(-1, "team_control_point_master");
+    if (ent == -1)
+    {
+        ent = CreateEntityByName("team_control_point_master");
+        DispatchSpawn(ent);
+        AcceptEntityInput(ent, "Enable");
+    }
+    
+    SetVariantInt(team);
+    AcceptEntityInput(ent, "SetWinner");
+}
+
 public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 {
 	int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	if (GetConVarInt(cvarZombieEnable) == 1)
+	if (GetConVarInt(cvarZombieEnable) == 1 && IsValidClient(attacker) && attacker != client)
 	{
 		if (GetClientTeam(client) == TFTeam_Blue) {
 			int survCount = GetTeamClientCount(3);
 			int zombieCount = GetTeamClientCount(2);
 			if (survCount == 1)
 			{
-				ServerCommand( "mp_scrambleteams 15" );
+				ForceTeamWin(2);
 				PrecacheSound("*#music/stingers/hl1_stinger_song8.mp3")
 				EmitSoundToAll("*#music/stingers/hl1_stinger_song8.mp3")
 				
@@ -1285,12 +1321,41 @@ public Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroadcast)
     new team = GetEventInt(hEvent, "team");
     new client = GetClientOfUserId(userid);
 }
+stock bool:IsValidTeam(client)
+{
+	new team = GetClientTeam(client);
+	if (team == TFTeam_Red || team == TFTeam_Blue)
+		return true;
+	return false;
+}
 public RoundStarted(Handle:hEvent, const String:name[], bool:dontBroadcast)
 { 
 	if (GetConVarInt(cvarZombieEnable) == 1)
 	{
 	    CreateTimer(0.0, LoadSomeStuff);
 	    CreateTimer(0.1, MoveFlagTimer,_,TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+		// from https://forums.alliedmods.net/showthread.php?p=1359262 but new syntax
+		new i, j, num_players, current_team, player_team;
+		decl valid_players[MaxClients];
+		// scramble teams
+		
+		for(i = 1; i <= MaxClients; i++) {
+			if(IsClientInGame(i) && IsValidTeam(i))
+				valid_players[num_players++] = i;
+		}
+		SortIntegers(valid_players, num_players, Sort_Random);
+		
+		current_team = (GetRandomInt(0, 1) + 1) | 2;
+		
+		for(i = 0; i < num_players; i++) {
+			j = valid_players[i];
+			player_team = GetClientTeam(j); 
+			if(player_team != current_team)
+				ChangeClientTeam(j, current_team);
+
+			TF2_RespawnPlayer(j);
+			current_team = 1;
+		}
 	}
 
 }
