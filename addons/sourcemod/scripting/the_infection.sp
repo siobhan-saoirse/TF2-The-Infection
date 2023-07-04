@@ -1354,7 +1354,7 @@ public RoundStarted(Handle:hEvent, const String:name[], bool:dontBroadcast)
 				ChangeClientTeam(j, current_team);
 
 			TF2_RespawnPlayer(j);
-			current_team = 1;
+			current_team = GetRandomInt(2, 3);
 		}
 	}
 
