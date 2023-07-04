@@ -1345,7 +1345,7 @@ public RoundStarted(Handle:hEvent, const String:name[], bool:dontBroadcast)
 		}
 		SortIntegers(valid_players, num_players, Sort_Random);
 		
-		current_team = (GetRandomInt(0, 1) + 1) | 2;
+		current_team = GetRandomInt(2, 3);
 		
 		for(i = 0; i < num_players; i++) {
 			j = valid_players[i];
