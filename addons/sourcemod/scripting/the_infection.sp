@@ -31,9 +31,11 @@ public Plugin:myinfo =
 Handle g_hSdkEquipWearable;
 static ConVar cvarZombieEnable;
 static ConVar cvarZombieNoDoors;
+static ConVar cvarZombieTimer;
 static ConVar sv_cheats;
 static ConVar cvarTimeScale;
 Handle g_hEquipWearable;
+Handle roundEndTimer;
 
 new g_iSurvRage						[MAXPLAYERS + 1];
 new bool:g_bIsPlagued[MAXPLAYERS + 1] = { false, ... };
@@ -66,6 +68,8 @@ public OnPluginStart()
 	cvarZombieEnable.AddChangeHook(OnZombieCvarChange);
 	cvarZombieNoDoors = CreateConVar("sm_infection_no_doors", "0", "If on while the gamemode is enabled, doors will be removed on round start.", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarZombieNoDoors.AddChangeHook(OnZombieCvarChange2);
+	cvarZombieTimer = CreateConVar("sm_infection_time", "0", "If greater than zero, A time entity will be created, and if the timer is finished, humans will win. (seconds only)", FCVAR_NONE, true, 0.0, true, 1.0);
+	cvarZombieTimer.AddChangeHook(OnZombieCvarChange3);
 
 	GameData hTF2 = new GameData("sm-tf2.games"); // sourcemod's tf2 gamedata
 
@@ -301,12 +305,17 @@ public void KillTimerSafe(Handle &hTimer)
 }
 public void OnZombieCvarChange2(ConVar convar, char[] oldValue, char[] newValue)
 {
-	if (newValue == 1)
+	if (GetConVarInt(cvarZombieNoDoors) == 1)
 	{
 		CreateTimer(0.1, Timer_Doors, TIMER_REPEAT);
 	} else {
 		ServerCommand("mp_restartgame_immediate 1");
 	}
+}
+
+public void OnZombieCvarChange3(ConVar convar, char[] oldValue, char[] newValue)
+{
+	ServerCommand("mp_restartgame_immediate 1");
 }
 
 public void Event_InvApp(Event event, const char[] name, bool dontBroadcast)
@@ -529,6 +538,10 @@ public Action:Explode(client, args) {
 public OnClientDisconnect_Post(client)
 {
 	g_bIsPlagued[client] = false;
+}
+public Action RoundEnd(Handle timer, int client)
+{
+	ForceTeamWin(3);
 }
 public Action Timer_SetZombieReady(Handle timer, int client)
 {
@@ -1379,13 +1392,23 @@ stock bool:IsValidTeam(client)
 public RoundStarted(Handle:hEvent, const String:name[], bool:dontBroadcast)
 { 
 	if (GetConVarInt(cvarZombieEnable) == 1)
-	{
-		
+	{	
+		if(roundEndTimer != INVALID_HANDLE)
+		{
+			KillTimer(roundEndTimer);
+			roundEndTimer = INVALID_HANDLE;
+		}
+		if (GetConVarInt(cvarZombieTimer) >= 1)
+		{
+			new time = float(GetConVarInt(cvarZombieTimer) + 1); 
+			PrintToChatAll("The round will end in %s minutes. Survive while you still can.", time/60)
+			roundEndTimer = CreateTimer(time, RoundEnd);
+		}
 		for(new i = 1; i <= MaxClients; i++) if(IsValidClient(i))
 		{
 			g_iSurvRage[i] = 0;
 		}
-		
+
 		if (GetConVarInt(cvarZombieNoDoors) == 1)
 		{
 			CreateTimer(0.1, Timer_Doors, TIMER_REPEAT);
