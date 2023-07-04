@@ -81,7 +81,7 @@ public OnPluginStart()
 	SetFailState("Failed to create call: CBasePlayer::EquipWearable");
 	AddCommandListener(TauntCmd, "taunt");
 	AddCommandListener(TauntCmd, "+taunt");
-	CreateTimer(1.0, Timer_RageMeter, _, TIMER_REPEAT);
+	CreateTimer(2.0, Timer_RageMeter, _, TIMER_REPEAT);
 }
 public Action:OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damagetype, &weapon, Float:damageForce[3], Float:damagePosition[3], damagecustom)
 {
@@ -1380,6 +1380,12 @@ public RoundStarted(Handle:hEvent, const String:name[], bool:dontBroadcast)
 { 
 	if (GetConVarInt(cvarZombieEnable) == 1)
 	{
+		
+		for(new i = 1; i <= MaxClients; i++) if(IsValidClient(i))
+		{
+			g_iSurvRage[i] = 0;
+		}
+		
 		if (GetConVarInt(cvarZombieNoDoors) == 1)
 		{
 			CreateTimer(0.1, Timer_Doors, TIMER_REPEAT);
