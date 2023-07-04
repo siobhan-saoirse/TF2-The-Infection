@@ -255,6 +255,13 @@ public OnClientPutInServer(client)
 	g_iSurvRage[client] = 0;
 	OnClientDisconnect_Post(client);
     SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
+	if (GetConVarInt(cvarZombieEnable) == 1)
+	{
+		if (!IsFakeClient(client)) {
+			ChangeClientTeam( client, 2 );
+			ShowVGUIPanel( client, "class_red" );
+		}
+	}
 }
 public void OnZombieCvarChange(ConVar convar, char[] oldValue, char[] newValue)
 {
@@ -371,6 +378,7 @@ public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadc
 				if (survCount == 2)
 				{
 					
+    			decl String:username[35];
 					for(int i=1; i<=MaxClients; i++)
 					{
 						if(IsClientInGame(i) && !IsFakeClient(i))
@@ -385,6 +393,14 @@ public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadc
 								TF2_AddCondition(i,TFCond_SmallBulletResist,TFCondDuration_Infinite);
 								
 								TF2Attrib_SetByName(i, "damage bonus", 2.5);
+								GetClientName(i,username,sizeof(username))
+								for (new j = 1; j <= MaxClients; j++)
+								{
+									if (IsClientInGame(j) && !IsFakeClient(j))
+									{ 
+										PrintToChat(j, "%s is now the last remaining survivor!",username);	 
+									}
+								}
 							} 
 					}
 					for(int i=1; i<=MaxClients; i++)
@@ -499,7 +515,7 @@ public Action Timer_SetZombieReady(Handle timer, int client)
 			TF2_RemoveWeaponSlot(client, 9);
 			InitializeZombieClass(client);
 			TF2_SwitchtoSlot(client, 2);
-	    	TF2Attrib_SetByName(client, "move speed penalty", 1.0);
+	    	TF2Attrib_SetByName(client, "move speed penalty", 0.8);
 	    	TF2Attrib_SetByName(client, "dmg taken from blast reduced", 1.5);
 	    	TF2Attrib_SetByName(client, "dmg taken from fire reduced", 1.35);
 	    	TF2Attrib_SetByName(client, "dmg taken from bullets reduced", 1.02); 
@@ -1358,6 +1374,15 @@ public RoundStarted(Handle:hEvent, const String:name[], bool:dontBroadcast)
 		}
 	}
 
+		
+	for (new i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientInGame(i) && !IsFakeClient(i))
+		{ 
+			SetEntProp(i, Prop_Send, "m_bForcedSkin", 0);
+			SetEntProp(i, Prop_Send, "m_nForcedSkin", 0);
+		}
+	}
 }
 
 stock bool:IsValidClient(client)
