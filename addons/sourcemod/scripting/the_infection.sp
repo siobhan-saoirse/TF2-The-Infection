@@ -68,8 +68,8 @@ public OnPluginStart()
 	cvarZombieEnable.AddChangeHook(OnZombieCvarChange);
 	cvarZombieNoDoors = CreateConVar("sm_infection_no_doors", "0", "If on while the gamemode is enabled, doors will be removed on round start.", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarZombieNoDoors.AddChangeHook(OnZombieCvarChange2);
-	cvarZombieTimer = CreateConVar("sm_infection_time", "0", "If greater than zero, A time entity will be created, and if the timer is finished, humans will win. (seconds only)", FCVAR_NONE, true, 0.0, true, 1.0);
-	cvarZombieTimer.AddChangeHook(OnZombieCvarChange3);
+	cvarZombieTimer = CreateConVar("sm_infection_time", "0.0", "If greater than zero, A time entity will be created, and if the timer is finished, humans will win. (minutes only, float value)", FCVAR_NONE); 
+	cvarZombieTimer.AddChangeHook(OnZombieCvarChange3); 
 
 	GameData hTF2 = new GameData("sm-tf2.games"); // sourcemod's tf2 gamedata
 
@@ -1398,11 +1398,11 @@ public RoundStarted(Handle:hEvent, const String:name[], bool:dontBroadcast)
 			KillTimer(roundEndTimer);
 			roundEndTimer = INVALID_HANDLE;
 		}
-		if (GetConVarInt(cvarZombieTimer) >= 1)
+		if (GetConVarFloat(cvarZombieTimer) >= 1.0)
 		{
-			new time = float(GetConVarInt(cvarZombieTimer) + 1); 
-			PrintToChatAll("The round will end in %s minutes. Survive while you still can.", time/60)
-			roundEndTimer = CreateTimer(time, RoundEnd);
+			new time = GetConVarFloat(cvarZombieTimer); 
+			PrintToChatAll("The round will end in %f minutes. Survive while you still can.", time)
+			roundEndTimer = CreateTimer(time * 60.0, RoundEnd);
 		}
 		for(new i = 1; i <= MaxClients; i++) if(IsValidClient(i))
 		{
