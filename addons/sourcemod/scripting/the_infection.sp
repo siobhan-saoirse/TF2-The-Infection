@@ -258,7 +258,7 @@ public OnClientPutInServer(client)
 }
 public void OnZombieCvarChange(ConVar convar, char[] oldValue, char[] newValue)
 {
-	ServerCommand("mp_rstartgame_immediate 1");
+	ServerCommand("mp_restartgame_immediate 1");
     if (!GetConVarBool(convar)) {
 
 	    Steam_SetGameDescription("Team Fortress");
