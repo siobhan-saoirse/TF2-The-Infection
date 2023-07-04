@@ -30,6 +30,7 @@ public Plugin:myinfo =
 
 Handle g_hSdkEquipWearable;
 static ConVar cvarZombieEnable;
+static ConVar cvarZombieNoDoors;
 static ConVar sv_cheats;
 static ConVar cvarTimeScale;
 Handle g_hEquipWearable;
@@ -63,6 +64,8 @@ public OnPluginStart()
 	g_hSdkEquipWearable = EndPrepSDKCall();
 	cvarZombieEnable = CreateConVar("sm_infection_enable", "0", "If on, The Infection gamemode will be enabled", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarZombieEnable.AddChangeHook(OnZombieCvarChange);
+	cvarZombieNoDoors = CreateConVar("sm_infection_no_doors", "0", "If on while the gamemode is enabled, doors will be removed on round start.", FCVAR_NONE, true, 0.0, true, 1.0);
+	cvarZombieNoDoors.AddChangeHook(OnZombieCvarChange2);
 
 	GameData hTF2 = new GameData("sm-tf2.games"); // sourcemod's tf2 gamedata
 
@@ -275,6 +278,35 @@ public void OnZombieCvarChange(ConVar convar, char[] oldValue, char[] newValue)
 	    Steam_SetGameDescription("The Infection");
 
     }
+}	
+
+public Action Timer_Doors(Handle timer)
+{
+	int doors=-1;
+	while((doors=FindEntityByClassname(doors, "func_door"))!=-1)
+    {
+        AcceptEntityInput(doors, "Open");
+    }
+	
+	KillTimerSafe(timer);
+}
+
+public void KillTimerSafe(Handle &hTimer)
+{
+	if(hTimer != INVALID_HANDLE)
+	{
+		KillTimer(hTimer);
+		hTimer = INVALID_HANDLE;
+	}
+}
+public void OnZombieCvarChange2(ConVar convar, char[] oldValue, char[] newValue)
+{
+	if (newValue == 1)
+	{
+		CreateTimer(0.1, Timer_Doors, TIMER_REPEAT);
+	} else {
+		ServerCommand("mp_restartgame_immediate 1");
+	}
 }
 
 public void Event_InvApp(Event event, const char[] name, bool dontBroadcast)
@@ -1348,6 +1380,10 @@ public RoundStarted(Handle:hEvent, const String:name[], bool:dontBroadcast)
 { 
 	if (GetConVarInt(cvarZombieEnable) == 1)
 	{
+		if (GetConVarInt(cvarZombieNoDoors) == 1)
+		{
+			CreateTimer(0.1, Timer_Doors, TIMER_REPEAT);
+		}
 	    CreateTimer(0.0, LoadSomeStuff);
 	    CreateTimer(0.1, MoveFlagTimer,_,TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 		// from https://forums.alliedmods.net/showthread.php?p=1359262 but new syntax
