@@ -1398,7 +1398,7 @@ public RoundStarted(Handle:hEvent, const String:name[], bool:dontBroadcast)
 			KillTimer(roundEndTimer);
 			roundEndTimer = INVALID_HANDLE;
 		}
-		if (GetConVarFloat(cvarZombieTimer) >= 0.0)
+		if (GetConVarFloat(cvarZombieTimer) >= 1.0)
 		{
 			new time = GetConVarFloat(cvarZombieTimer) * 60; 
 			PrintToChatAll("The round will end in %f seconds. Survive while you still can.", time)
