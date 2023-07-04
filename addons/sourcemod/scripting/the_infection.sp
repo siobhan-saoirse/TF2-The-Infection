@@ -1400,9 +1400,9 @@ public RoundStarted(Handle:hEvent, const String:name[], bool:dontBroadcast)
 		}
 		if (GetConVarFloat(cvarZombieTimer) >= 0.0)
 		{
-			new time = GetConVarFloat(cvarZombieTimer); 
-			PrintToChatAll("The round will end in %f minutes. Survive while you still can.", time)
-			roundEndTimer = CreateTimer(time * 60.0, RoundEnd);
+			new time = GetConVarFloat(cvarZombieTimer) * 60; 
+			PrintToChatAll("The round will end in %f seconds. Survive while you still can.", time)
+			roundEndTimer = CreateTimer(time, RoundEnd);
 		}
 		for(new i = 1; i <= MaxClients; i++) if(IsValidClient(i))
 		{
