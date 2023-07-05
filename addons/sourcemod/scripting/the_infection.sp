@@ -402,6 +402,11 @@ public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadc
 			if (survCount == 1)
 			{
 				ForceTeamWin(2);
+				if(roundEndTimer != INVALID_HANDLE)
+				{
+					KillTimer(roundEndTimer);
+					roundEndTimer = INVALID_HANDLE;
+				}
 				PrecacheSound("*#music/stingers/hl1_stinger_song8.mp3")
 				EmitSoundToAll("*#music/stingers/hl1_stinger_song8.mp3")
 				
@@ -418,8 +423,7 @@ public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadc
 				CreateTimer(0.1, TeleportToOGLocation, client);
 				if (survCount == 2)
 				{
-					
-    			decl String:username[35];
+						
 					for(int i=1; i<=MaxClients; i++)
 					{
 						if(IsClientInGame(i) && !IsFakeClient(i))
@@ -434,14 +438,6 @@ public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadc
 								TF2_AddCondition(i,TFCond_SmallBulletResist,TFCondDuration_Infinite);
 								
 								TF2Attrib_SetByName(i, "damage bonus", 2.5);
-								GetClientName(i,username,sizeof(username))
-								for (new j = 1; j <= MaxClients; j++)
-								{
-									if (IsClientInGame(j) && !IsFakeClient(j))
-									{ 
-										PrintToChat(j, "%s is now the last remaining survivor!",username);	 
-									}
-								}
 							} 
 					}
 					for(int i=1; i<=MaxClients; i++)
@@ -454,7 +450,7 @@ public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadc
 					EmitGameSoundToAll("Halloween.Merasmus_Stun")
 					cvarTimeScale.SetFloat(0.1);
 					CreateTimer(0.5, SetTimeBack);
-					CreateTimer(0.5, PlaySong);
+					CreateTimer(0.5, PlaySong, client);
 					
 					PrecacheSound("*#music/stingers/hl1_stinger_song28.mp3")
 					EmitSoundToAll("*#music/stingers/hl1_stinger_song28.mp3")
@@ -478,11 +474,20 @@ public Action SetTimeBack(Handle timer)
 	return Plugin_Handled;
 }
 
-public Action PlaySong(Handle timer)
+public Action PlaySong(Handle timer, int client)
 {
 	PrecacheSound("*#music/hl2_song3.mp3")
+	PrecacheSound("*#music/hl2_song15.mp3")
+	
+	decl String:username[35];
+	GetClientName(client,username,sizeof(username))
+
 	for(int i=1; i<=MaxClients; i++)
 	{
+		if (IsClientInGame(i) && !IsFakeClient(i))
+		{ 
+			PrintToChat(i, "%s is now the last remaining survivor!",username);	 
+		}
 		if(IsClientInGame(i) && GetClientTeam(i) == TFTeam_Blue)
 		{
 				switch(GetRandomInt(1,3)) {
@@ -706,9 +711,8 @@ public Action Timer_SetZombieReady(Handle timer, int client)
 			SetVariantString("");
 			AcceptEntityInput(client, "SetCustomModel");
 			
-			SetEntProp(client, Prop_Send, "m_bForcedSkin", 0);
-			SetEntProp(client, Prop_Send, "m_nForcedSkin", 0);
 			g_bIsPlagued[client] = false;
+			CreateTimer(0.1, Timer_UnZombie, client, TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
 }
@@ -1327,32 +1331,39 @@ stock InitializeZombieClass(client)
 	}	
 }
 
+public Action Timer_UnZombie(Handle timer, int client)	
+{
+
+	SetEntProp(client, Prop_Send, "m_bForcedSkin", 0);
+	SetEntProp(client, Prop_Send, "m_nForcedSkin", 0);
+
+}
 public Action Timer_Makezombie2(Handle timer, int client)	
 {
 	if (IsValidClient(client) && IsPlayerAlive(client) && GetClientTeam(client)==2 && TF2_GetPlayerClass(client) !=TFClass_Spy)
 	{
-		TF2Attrib_SetByName(client, "player skin override", 1.0);
+		//TF2Attrib_SetByName(client, "player skin override", 1.0);
 		TF2Attrib_SetByName(client, "zombiezombiezombiezombie", 1.0);
 		SetEntProp(client, Prop_Send, "m_bForcedSkin", 1);
 		SetEntProp(client, Prop_Send, "m_nForcedSkin", 4);
-	}
+	} 
 	if (IsValidClient(client) && IsPlayerAlive(client) && GetClientTeam(client)==3 && TF2_GetPlayerClass(client) !=TFClass_Spy)
 	{
-		TF2Attrib_SetByName(client, "player skin override", 1.0);
+		//TF2Attrib_SetByName(client, "player skin override", 1.0);
 		TF2Attrib_SetByName(client, "zombiezombiezombiezombie", 1.0);
 		SetEntProp(client, Prop_Send, "m_bForcedSkin", 1);
 		SetEntProp(client, Prop_Send, "m_nForcedSkin", 5);
 	}	
 	if (IsValidClient(client) && IsPlayerAlive(client) && GetClientTeam(client)==2 && TF2_GetPlayerClass(client) == TFClass_Spy)
 	{
-		TF2Attrib_SetByName(client, "player skin override", 1.0);
+		//TF2Attrib_SetByName(client, "player skin override", 1.0);
 		TF2Attrib_SetByName(client, "zombiezombiezombiezombie", 1.0);
 		SetEntProp(client, Prop_Send, "m_bForcedSkin", 1);
 		SetEntProp(client, Prop_Send, "m_nForcedSkin", 22);
 	}
 	if (IsValidClient(client) && IsPlayerAlive(client) && GetClientTeam(client)==3 && TF2_GetPlayerClass(client) == TFClass_Spy)
 	{
-		TF2Attrib_SetByName(client, "player skin override", 1.0);
+		//TF2Attrib_SetByName(client, "player skin override", 1.0);
 		TF2Attrib_SetByName(client, "zombiezombiezombiezombie", 1.0);
 		SetEntProp(client, Prop_Send, "m_bForcedSkin", 1);
 		SetEntProp(client, Prop_Send, "m_nForcedSkin", 23);
@@ -1438,7 +1449,6 @@ public RoundStarted(Handle:hEvent, const String:name[], bool:dontBroadcast)
 			current_team = GetRandomInt(2, 3);
 		}
 	}
-
 		
 	for (new i = 1; i <= MaxClients; i++)
 	{
