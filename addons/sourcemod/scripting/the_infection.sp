@@ -36,7 +36,8 @@ static ConVar sv_cheats;
 static ConVar cvarTimeScale;
 Handle g_hEquipWearable;
 Handle roundEndTimer;
-
+Handle countdownTimer;
+new g_iCountdown;
 new g_iSurvRage						[MAXPLAYERS + 1];
 new bool:g_bIsPlagued[MAXPLAYERS + 1] = { false, ... };
 
@@ -402,6 +403,11 @@ public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadc
 			if (survCount == 1)
 			{
 				ForceTeamWin(2);
+				if(countdownTimer != INVALID_HANDLE)
+				{
+					KillTimer(countdownTimer);
+					countdownTimer = INVALID_HANDLE;
+				}
 				if(roundEndTimer != INVALID_HANDLE)
 				{
 					KillTimer(roundEndTimer);
@@ -547,6 +553,14 @@ public OnClientDisconnect_Post(client)
 public Action RoundEnd(Handle timer, int client)
 {
 	ForceTeamWin(3);
+}
+public Action Countdown(Handle timer, int client)
+{
+	if (g_iCountdown <= 0)
+		return Plugin_Stop;
+	PrintCenterTextAll("%d ",g_iCountdown)
+	g_iCountdown--;
+	return Plugin_Continue;
 }
 public Action Timer_SetZombieReady(Handle timer, int client)
 {
@@ -1409,11 +1423,18 @@ public RoundStarted(Handle:hEvent, const String:name[], bool:dontBroadcast)
 			KillTimer(roundEndTimer);
 			roundEndTimer = INVALID_HANDLE;
 		}
+		if(countdownTimer != INVALID_HANDLE)
+		{
+			KillTimer(countdownTimer);
+			countdownTimer = INVALID_HANDLE;
+		}
 		if (GetConVarFloat(cvarZombieTimer) >= 1.0)
 		{
 			new time = GetConVarFloat(cvarZombieTimer) * 60; 
 			PrintToChatAll("The round will end in %f seconds. Survive while you still can.", time)
 			roundEndTimer = CreateTimer(time, RoundEnd);
+			g_iCountdown = RoundFloat(time);
+			countdownTimer = CreateTimer(1.0, Countdown, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 		}
 		for(new i = 1; i <= MaxClients; i++) if(IsValidClient(i))
 		{
