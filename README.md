@@ -3,6 +3,8 @@ Zombie Survival gamemode for TF2
 
 ## Requirements
 
+Windows SRCDS
+
 TF2Items
 
 TF2Attributes (nosoop fork)
